@@ -8,6 +8,8 @@ export function readAssessmentForm(els) {
     rubric: els.rubric.value.trim(),
     difficulty: els.difficulty.value,
     examples: els.examples.value.trim(),
+    classId: els.classSelect.value,
+    status: "published",
     count: Number(els.questionCount.value),
     createdAt: new Date().toISOString(),
   };
@@ -41,6 +43,7 @@ export function createSubmission({ assessment, studentName, finalScore, question
     id: uid("sub"),
     assessmentId: assessment.id,
     assessmentTitle: assessment.topic,
+    classId: assessment.classId,
     studentName,
     submittedAt: new Date().toISOString(),
     finalScore,

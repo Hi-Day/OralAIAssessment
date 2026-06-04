@@ -24,6 +24,29 @@ async function generateQuestions(payload) {
   return result.questions.slice(0, count).map(normalizeQuestion(payload));
 }
 
+async function recommendAssessmentConfig(payload) {
+  const result = await callOpenRouter(
+    [
+      {
+        role: "user",
+        content: JSON.stringify({
+          tugas: "Buat rekomendasi kompetensi atau learning outcome dan rubrik untuk assessment lisan.",
+          topik: payload.topic,
+          tingkat_kesulitan: payload.difficulty || "Menengah",
+          konteks:
+            "Guru akan memakai rekomendasi ini untuk membuat soal evaluasi lisan siswa. Gunakan bahasa Indonesia yang ringkas, operasional, dan bisa langsung diedit guru.",
+        }),
+      },
+    ],
+    'Format: {"outcomes":"3-5 learning outcome dalam baris terpisah","rubric":"rubrik berbobot total 100% dalam baris terpisah"}'
+  );
+
+  return {
+    outcomes: String(result.outcomes || "").trim(),
+    rubric: String(result.rubric || "").trim(),
+  };
+}
+
 async function evaluateAnswers(payload) {
   const result = await callOpenRouter(
     [
@@ -46,6 +69,25 @@ async function evaluateAnswers(payload) {
     feedback: String(result.feedback || "Feedback belum tersedia."),
     questionScores: result.questionScores.map(normalizeQuestionScore),
   };
+}
+
+async function improveQuestionSet(payload) {
+  const result = await callOpenRouter(
+    [
+      {
+        role: "user",
+        content: JSON.stringify({
+          tugas: "Perbaiki question set assessment lisan agar lebih jelas, selaras dengan learning outcome dan rubrik, serta tetap sesuai tingkat kesulitan.",
+          assessment_config: payload.config,
+          questions: payload.questions,
+        }),
+      },
+    ],
+    'Format: {"questions":[{"prompt":"...","focus":"...","ideal":"..."}]}. Jumlah dan urutan questions harus sama dengan input.'
+  );
+
+  if (!Array.isArray(result.questions)) throw new Error("Model tidak mengembalikan daftar soal");
+  return result.questions.map(normalizeQuestion(payload.config || {}));
 }
 
 function normalizeQuestion(payload) {
@@ -77,4 +119,6 @@ function clampScore(value) {
 module.exports = {
   evaluateAnswers,
   generateQuestions,
+  improveQuestionSet,
+  recommendAssessmentConfig,
 };

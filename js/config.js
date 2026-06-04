@@ -1,6 +1,8 @@
 export const DEFAULT_STATE = {
   assessments: [],
   submissions: [],
+  classes: [],
+  memberships: [],
 };
 
 export const DEFAULT_QUESTION_COUNT = 5;

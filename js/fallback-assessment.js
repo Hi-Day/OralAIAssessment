@@ -21,6 +21,22 @@ export function generateFallbackQuestions({ topic, outcomes, rubric, difficulty,
   });
 }
 
+export function recommendFallbackConfig(topic, difficulty = "Menengah") {
+  return {
+    outcomes: [
+      `Siswa mampu menjelaskan konsep utama pada materi ${topic} dengan bahasa sendiri.`,
+      `Siswa mampu menghubungkan konsep ${topic} dengan contoh atau situasi nyata yang relevan.`,
+      `Siswa mampu menyampaikan alasan, bukti, atau proses berpikir secara runtut dalam jawaban lisan tingkat ${difficulty.toLowerCase()}.`,
+    ].join("\n"),
+    rubric: [
+      "Ketepatan konsep: 40% - jawaban sesuai konsep inti dan tidak menunjukkan miskonsepsi utama.",
+      "Kelengkapan penalaran: 25% - siswa menjelaskan hubungan sebab-akibat, proses, atau alasan secara logis.",
+      "Contoh dan penerapan: 20% - siswa memberikan contoh yang relevan dengan topik dan konteks pembelajaran.",
+      "Kejelasan komunikasi lisan: 15% - jawaban runtut, mudah dipahami, dan menggunakan istilah kunci dengan tepat.",
+    ].join("\n"),
+  };
+}
+
 export function evaluateFallbackAssessment(assessment, answers, studentName, makeSubmission) {
   const rubricKeywords = getKeywords(assessment.rubric, assessment.outcomes, assessment.topic);
   const questionScores = assessment.questions.map((question, index) => {

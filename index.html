@@ -7,7 +7,57 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="app-shell">
+    <section id="authView" class="auth-view">
+      <div class="auth-copy">
+        <div class="brand auth-brand">
+          <div class="brand-mark" aria-hidden="true">OA</div>
+          <div>
+            <strong>OralAI</strong>
+            <span>Assessment lisan multi-tenant</span>
+          </div>
+        </div>
+        <h1>Masuk untuk mengelola assessment tenant kamu</h1>
+        <p>Setiap sekolah, lembaga, atau organisasi punya ruang data terpisah dengan sesi login aman.</p>
+      </div>
+
+      <div class="auth-panel">
+        <form id="loginForm" class="auth-form">
+          <h2>Login</h2>
+          <label>
+            Email
+            <input id="loginEmail" type="text" inputmode="email" autocomplete="email" required />
+          </label>
+          <label>
+            Password
+            <input id="loginPassword" type="password" autocomplete="current-password" required />
+          </label>
+          <button class="primary-button" type="submit">Login</button>
+        </form>
+
+        <form id="registerForm" class="auth-form">
+          <h2>Daftar tenant</h2>
+          <label>
+            Nama tenant
+            <input id="registerTenant" required placeholder="Contoh: SMA Nusantara" />
+          </label>
+          <label>
+            Nama admin
+            <input id="registerName" autocomplete="name" required />
+          </label>
+          <label>
+            Email admin
+            <input id="registerEmail" type="text" inputmode="email" autocomplete="email" required />
+          </label>
+          <label>
+            Password
+            <input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required />
+          </label>
+          <button class="secondary-button" type="submit">Buat tenant</button>
+        </form>
+      </div>
+    </section>
+
+    <div id="appShell" class="app-shell hidden">
       <aside class="sidebar">
         <div class="brand">
           <div class="brand-mark" aria-hidden="true">OA</div>
@@ -30,11 +80,15 @@
             <span aria-hidden="true">▤</span>
             Monitoring
           </button>
+          <button class="nav-button" id="adminNav" data-view="accountView">
+            <span aria-hidden="true">ID</span>
+            Akun
+          </button>
         </nav>
 
         <div class="sidebar-panel">
           <span class="panel-label">Status sistem</span>
-          <strong>OpenRouter Hy3 aktif</strong>
+          <strong>OpenRouter AI aktif</strong>
           <p>Generate soal dan evaluasi memakai backend lokal agar API key tetap aman.</p>
         </div>
       </aside>
@@ -46,6 +100,12 @@
             <h1>Assessment berbasis AI untuk jawaban spoken response</h1>
           </div>
           <div class="topbar-actions">
+            <div class="account-chip">
+              <strong id="accountName">-</strong>
+              <span id="tenantName">-</span>
+              <span id="accountRole">-</span>
+            </div>
+            <button class="secondary-button" id="logoutButton" type="button">Logout</button>
             <button class="icon-button" id="seedDemo" title="Isi contoh data" aria-label="Isi contoh data">+</button>
             <button class="icon-button" id="resetData" title="Reset data" aria-label="Reset data">R</button>
           </div>
@@ -66,6 +126,10 @@
                 Topik atau materi
                 <input id="topic" required placeholder="Contoh: fotosintesis, hukum Newton, teks argumentasi" />
               </label>
+              <div class="inline-actions">
+                <button class="secondary-button" id="recommendOutcomes" type="button">Rekomendasikan kompetensi</button>
+                <button class="secondary-button" id="recommendRubric" type="button">Rekomendasikan rubrik</button>
+              </div>
 
               <label>
                 Kompetensi / learning outcome
@@ -78,6 +142,10 @@
               </label>
 
               <div class="form-row">
+                <label>
+                  Kelas tujuan
+                  <select id="classSelect" required></select>
+                </label>
                 <label>
                   Tingkat kesulitan
                   <select id="difficulty">
@@ -101,6 +169,21 @@
             </form>
 
             <div class="preview-panel">
+              <div id="classPanel" class="class-panel">
+                <h3>Kelas</h3>
+                <form id="classForm" class="mini-form">
+                  <input id="className" placeholder="Nama kelas baru" />
+                  <button class="secondary-button" type="submit">Buat kelas</button>
+                </form>
+                <form id="joinClassForm" class="mini-form hidden">
+                  <input id="joinCode" placeholder="Kode kelas" />
+                  <button class="secondary-button" type="submit">Join kelas</button>
+                </form>
+                <div id="classList" class="list-stack empty-state">Belum ada kelas.</div>
+                <h3>Request join</h3>
+                <div id="pendingJoinList" class="list-stack empty-state">Belum ada request join.</div>
+              </div>
+
               <div class="visual-card">
                 <div class="voice-waves" aria-hidden="true">
                   <span></span><span></span><span></span><span></span><span></span>
@@ -114,6 +197,20 @@
               <div id="assessmentList" class="list-stack empty-state">Belum ada assessment. Buat konfigurasi pertama untuk mulai.</div>
             </div>
           </div>
+
+          <div id="questionEditor" class="result-panel hidden">
+            <div class="result-header">
+              <div>
+                <h3>Kustomisasi question set</h3>
+                <p>Edit manual setiap soal atau minta AI memperbaiki seluruh question set sebelum disimpan ke kelas.</p>
+              </div>
+              <div class="student-actions">
+                <button id="improveQuestionSet" class="secondary-button" type="button">Perbaiki dengan AI</button>
+                <button id="saveQuestionSet" class="primary-button" type="button">Simpan assessment</button>
+              </div>
+            </div>
+            <div id="editableQuestionList" class="feedback-grid"></div>
+          </div>
         </section>
 
         <section id="studentView" class="view" aria-labelledby="studentTitle">
@@ -123,6 +220,15 @@
               <p>Pilih sesi, jawab lisan satu per satu, lalu lihat feedback setelah selesai.</p>
             </div>
             <select id="studentAssessmentSelect" aria-label="Pilih assessment"></select>
+          </div>
+
+          <div id="studentClassPanel" class="preview-panel class-panel">
+            <h3>Kelas saya</h3>
+            <form id="studentJoinClassForm" class="mini-form">
+              <input id="studentJoinCode" placeholder="Masukkan kode kelas" />
+              <button class="secondary-button" type="submit">Request join</button>
+            </form>
+            <div id="studentClassList" class="list-stack empty-state">Belum join kelas.</div>
           </div>
 
           <div id="studentEmpty" class="empty-state large">Belum ada assessment yang tersedia untuk siswa.</div>
@@ -193,6 +299,45 @@
             <div class="analytics-panel wide">
               <h3>Riwayat submission</h3>
               <div id="submissionList" class="list-stack empty-state">Belum ada hasil assessment.</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="accountView" class="view" aria-labelledby="accountTitle">
+          <div class="section-heading">
+            <div>
+              <h2 id="accountTitle">Kelola akun</h2>
+              <p>Buat akun guru dan siswa dalam tenant yang sama.</p>
+            </div>
+          </div>
+
+          <div class="account-grid">
+            <form id="userForm" class="form-panel">
+              <label>
+                Nama
+                <input id="userName" required placeholder="Contoh: Budi Santoso" />
+              </label>
+              <label>
+                Email
+                <input id="userEmail" type="text" inputmode="email" required placeholder="nama@sekolah.sch.id" />
+              </label>
+              <label>
+                Password
+                <input id="userPassword" type="password" minlength="8" required placeholder="Minimal 8 karakter" />
+              </label>
+              <label>
+                Role
+                <select id="userRole">
+                  <option value="teacher">Guru</option>
+                  <option value="student">Siswa</option>
+                </select>
+              </label>
+              <button class="primary-button" type="submit">Buat akun</button>
+            </form>
+
+            <div class="preview-panel">
+              <h3>Daftar akun tenant</h3>
+              <div id="userList" class="list-stack empty-state">Belum ada akun tambahan.</div>
             </div>
           </div>
         </section>

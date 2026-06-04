@@ -4,6 +4,7 @@
   "main": "server.js",
   "scripts": {
     "check": "node --check server.js && node --check app.js",
+    "dev": "node server.js",
     "start": "node server.js"
   },
   "keywords": [],

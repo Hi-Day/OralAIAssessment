@@ -22,7 +22,7 @@ const server = http.createServer(async (req, res) => {
     return serveStaticFile(res, ROOT, url.pathname);
   } catch (error) {
     console.error(error);
-    return sendJson(res, 500, { error: error.message || "Server error" });
+    return sendJson(res, error.status || 500, { error: error.message || "Server error" });
   }
 });
 

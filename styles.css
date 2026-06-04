@@ -29,6 +29,51 @@ body {
   background-size: 42px 42px;
 }
 
+.auth-view {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(340px, 1.1fr);
+  gap: 28px;
+  align-items: center;
+  min-height: 100vh;
+  padding: 28px;
+}
+
+.auth-copy {
+  display: grid;
+  gap: 18px;
+}
+
+.auth-brand span {
+  color: var(--muted);
+}
+
+.auth-copy h1 {
+  max-width: 650px;
+}
+
+.auth-copy p {
+  max-width: 560px;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.auth-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.auth-form {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow);
+}
+
 button,
 input,
 textarea,
@@ -207,6 +252,21 @@ h3 {
   gap: 10px;
 }
 
+.account-chip {
+  display: grid;
+  gap: 2px;
+  min-width: 160px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.account-chip span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 .icon-button {
   display: grid;
   place-items: center;
@@ -248,13 +308,18 @@ h3 {
 
 .teacher-grid,
 .student-workspace,
-.monitor-grid {
+.monitor-grid,
+.account-grid {
   display: grid;
   gap: 18px;
 }
 
 .teacher-grid {
   grid-template-columns: minmax(320px, 1.05fr) minmax(280px, 0.95fr);
+}
+
+.account-grid {
+  grid-template-columns: minmax(320px, 0.75fr) minmax(300px, 1fr);
 }
 
 .form-panel,
@@ -320,8 +385,20 @@ select:focus {
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 140px;
+  grid-template-columns: 1fr 1fr 140px;
   gap: 12px;
+}
+
+.class-panel {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.mini-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
 }
 
 .primary-button,
@@ -346,6 +423,13 @@ select:focus {
   border: 1px solid var(--line);
   background: #ffffff;
   color: var(--ink);
+}
+
+.inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-start;
 }
 
 .full {
@@ -412,6 +496,16 @@ select:focus {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #ffffff;
+}
+
+.user-role {
+  align-self: flex-start;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #eef4ff;
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 800;
 }
 
 .assessment-item p,
@@ -651,6 +745,11 @@ select:focus {
 }
 
 @media (max-width: 960px) {
+  .auth-view,
+  .auth-panel {
+    grid-template-columns: 1fr;
+  }
+
   .app-shell {
     grid-template-columns: 1fr;
   }
@@ -670,7 +769,8 @@ select:focus {
 
   .teacher-grid,
   .student-workspace,
-  .monitor-grid {
+  .monitor-grid,
+  .account-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -694,6 +794,10 @@ select:focus {
 
   .form-row,
   .visual-card {
+    grid-template-columns: 1fr;
+  }
+
+  .mini-form {
     grid-template-columns: 1fr;
   }
 
