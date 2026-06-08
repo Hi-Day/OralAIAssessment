@@ -1,9 +1,9 @@
-# Proposal Proyek: Oral AI Assessment (Asesmen Lisan Berbasis AI)
+# Proposal Proyek: lisan.ai (Asesmen Lisan Berbasis AI)
 
 ## 1. Background of the Project
 Perkembangan pesat teknologi kecerdasan buatan (AI) generatif, seperti ChatGPT dan model bahasa besar lainnya, telah membawa disrupsi yang signifikan dalam dunia pendidikan. Salah satu dampak yang paling mengkhawatirkan adalah menurunnya integritas akademik pada ujian atau asesmen tertulis konvensional. Ujian tertulis (seperti esai, tugas mandiri, atau *take-home test*) kini sangat rawan terhadap praktik *copy-paste* (copas) dan plagiarisme menggunakan jawaban yang dihasilkan secara otomatis oleh AI. Mahasiswa dapat dengan mudah melewati ujian tanpa perlu benar-benar memahami dan menguasai materi pembelajaran.
 
-Untuk memastikan bahwa sebuah evaluasi benar-benar mengukur pemahaman otentik dari mahasiswa, asesmen tertulis tidak lagi cukup. Diperlukan metode ujian lisan (*oral assessment*) di mana mahasiswa harus memproses pertanyaan secara langsung dan mengartikulasikan jawaban melalui pemikiran spontan mereka sendiri. Namun, menyelenggarakan ujian lisan secara tradisional memakan waktu yang sangat lama dan membutuhkan sumber daya penguji yang besar. Oleh karena itu, proyek "Oral AI Assessment" ini diusulkan untuk mengotomatisasi ujian lisan menggunakan AI. Sistem ini akan memungkinkan pelaksanaan ujian lisan secara masif dan terstruktur, mengembalikan integritas akademik tanpa membebani waktu dosen.
+Untuk memastikan bahwa sebuah evaluasi benar-benar mengukur pemahaman otentik dari mahasiswa, asesmen tertulis tidak lagi cukup. Diperlukan metode ujian lisan (*oral assessment*) di mana mahasiswa harus memproses pertanyaan secara langsung dan mengartikulasikan jawaban melalui pemikiran spontan mereka sendiri. Namun, menyelenggarakan ujian lisan secara tradisional memakan waktu yang sangat lama dan membutuhkan sumber daya penguji yang besar. Oleh karena itu, proyek "lisan.ai" ini diusulkan untuk mengotomatisasi ujian lisan menggunakan AI. Sistem ini akan memungkinkan pelaksanaan ujian lisan secara masif dan terstruktur, mengembalikan integritas akademik tanpa membebani waktu dosen.
 
 ## 2. Problem Statement
 1. **Rentan Terhadap Kecurangan Berbasis AI:** Asesmen dan ujian tertulis semakin kehilangan kredibilitasnya karena sangat rentan dimanipulasi dengan menggunakan AI (rawan *copy-paste*), sehingga nilai yang didapat mahasiswa seringkali tidak mencerminkan pemahaman aslinya.
@@ -62,3 +62,34 @@ Beberapa risiko utama proyek beserta rencana mitigasinya:
    * *Mitigasi:* Menggunakan arsitektur *scalable* berorientasi *cloud* dengan *load balancer* dan optimalisasi *Prefix KV Cache* untuk mengurangi beban CPU pada *engine* LLM.
 3. **Risiko Privasi dan Keamanan Data Siswa:** Penanganan rekaman suara dan metrik evaluasi personal mahasiswa.
    * *Mitigasi:* Penerapan enkripsi *database* dan kepatuhan penuh terhadap standar kebijakan privasi data institusi akademik yang berlaku.
+
+---
+
+## Apendiks (Lampiran Tambahan)
+
+Bagian ini memuat informasi pendukung, diagram alur teknis, dan contoh data yang melengkapi proposal utama proyek lisan.ai.
+
+### A. Alur Kerja Sistem (System Workflow)
+1. **Dosen/Guru:** Mengakses *Teacher Dashboard*, membuat kelas, dan mendefinisikan topik ujian serta parameter rubrik penilaian (misal: penguasaan materi, kelancaran lisan, akurasi). AI akan menghasilkan bank soal awal yang dapat diedit oleh dosen.
+2. **Mahasiswa:** Bergabung ke dalam kelas dan menunggu persetujuan (*approval*) dari dosen. Saat ujian dimulai, mahasiswa mengakses soal yang telah di-*publish*.
+3. **Pelaksanaan Ujian:** Mahasiswa menekan tombol rekam (mikrofon) dan menjawab soal secara lisan. Modul *Speech-to-Text* (STT) akan mentranskripsikan jawaban audio tersebut ke dalam teks.
+4. **Evaluasi AI:** Teks transkripsi mahasiswa dikirim ke *Engine* AI bersama dengan rubrik *grading* (dengan memanfaatkan *Prefix KV Cache* untuk kecepatan pemrosesan *prompt*).
+5. **Hasil (Output):** AI memberikan nilai terperinci sesuai rubrik beserta saran perbaikan. Mahasiswa dapat langsung melihat *feedback* ini, dan Dosen dapat memantau rekapitulasi nilai seluruh kelas secara *real-time*.
+
+### B. Arsitektur Teknis (High-Level)
+* **Frontend:** Antarmuka *web* interaktif dengan dukungan *Web Audio API* untuk perekaman suara langsung melalui peramban (*browser*).
+* **Backend (Node.js):** Menangani *routing* API, autentikasi *multi-role* (Admin, Guru, Siswa), dan integrasi dengan layanan pihak ketiga.
+* **Database (SQLite/PostgreSQL):** Penyimpanan relasional yang menggunakan pendekatan *Multi-Tenant* guna menjamin pemisahan dan keamanan data antar kelas atau entitas sekolah.
+* **Infrastruktur AI:** Integrasi dengan *Large Language Model* (LLM) untuk fungsi generatif (pembuatan soal) dan analitik (penilaian otomatis), serta integrasi *Speech-to-Text* untuk transkripsi audio.
+
+### C. Contoh Format Evaluasi Rubrik (Data Output)
+AI dikonfigurasi untuk mengeluarkan *output* JSON terstruktur agar mudah diproses dan divisualisasikan oleh sistem di dasbor:
+```json
+{
+  "skor_pemahaman": 85,
+  "skor_komunikasi": 80,
+  "skor_total": 82.5,
+  "feedback_positif": "Mahasiswa mampu menjelaskan konsep dasar dengan sangat baik dan artikulasinya jelas.",
+  "area_perbaikan": "Beberapa istilah teknis spesifik masih digunakan secara kurang presisi. Sebaiknya tinjau kembali bab..."
+}
+```

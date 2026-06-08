@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@libsql/client": "^0.17.3",
     "sqlite": "^5.1.1",
     "sqlite3": "^6.0.1"
   }

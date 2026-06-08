@@ -1,20 +1,41 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const sqlite3 = require("sqlite3");
-const { open } = require("sqlite");
+const { createClient } = require("@libsql/client");
 const { ROOT } = require("./config");
 
 const DATA_DIR = path.join(ROOT, "data");
-const DB_PATH = path.join(DATA_DIR, "oralai.db");
 
 let db;
+let libsqlClient;
 
 async function initDatabase() {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  db = await open({
-    filename: DB_PATH,
-    driver: sqlite3.Database,
+  if (process.env.TURSO_DATABASE_URL.startsWith("file:")) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+
+  libsqlClient = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN,
   });
+
+  db = {
+    async all(sql, ...params) {
+      const rs = await libsqlClient.execute({ sql, args: params });
+      return rs.rows;
+    },
+    async get(sql, ...params) {
+      const rs = await libsqlClient.execute({ sql, args: params });
+      return rs.rows[0];
+    },
+    async run(sql, ...params) {
+      const rs = await libsqlClient.execute({ sql, args: params });
+      return { changes: rs.rowsAffected, lastID: rs.lastInsertRowid };
+    },
+    async exec(sql) {
+      await libsqlClient.executeMultiple(sql);
+    }
+  };
+
   await db.exec("PRAGMA foreign_keys = ON");
   await db.exec(`
     CREATE TABLE IF NOT EXISTS tenants (
@@ -450,7 +471,6 @@ async function clearData(tenantId) {
 }
 
 module.exports = {
-  DB_PATH,
   clearData,
   approveMembership,
   createClass,
