@@ -103,54 +103,45 @@ async function seedTestAccounts() {
   const authTeacher = { tenant: { id: tenantId }, user: { id: teacher.id, role: "teacher" } };
 
   // Assessment 1: Unanswered
-  let assessment1 = await db.get("SELECT * FROM assessments WHERE topic = ?", "Perkenalan Diri (Bahasa Inggris)");
-  if (!assessment1) {
-    const a1 = {
-      id: uid("assessment"),
-      classId: classroom.id,
-      topic: "Perkenalan Diri (Bahasa Inggris)",
-      difficulty: "Pemula",
-      status: "published",
-      outcomes: "Siswa mampu memperkenalkan diri dalam bahasa Inggris dasar.",
-      rubric: "Kejelasan: 50%, Kosa Kata: 50%",
-      timeLimit: 60,
-      createdAt: new Date().toISOString(),
-      questions: [
-        { id: uid("q"), prompt: "What is your name and where do you live?", focus: "identity", ideal: "I am [Name] and I live in [City]." },
-        { id: uid("q"), prompt: "What are your hobbies?", focus: "hobby", ideal: "My hobbies are [Hobby 1] and [Hobby 2]." }
-      ]
-    };
-    await saveAssessment(authTeacher, a1);
-    console.log("Created Unanswered Assessment 1");
-  } else {
-    console.log("Unanswered Assessment 1 already exists");
-  }
+  const a1Id = "assess-seed-perkenalan-diri";
+  const a1 = {
+    id: a1Id,
+    classId: classroom.id,
+    topic: "Perkenalan Diri (Bahasa Inggris)",
+    difficulty: "Pemula",
+    status: "published",
+    outcomes: "Siswa mampu memperkenalkan diri dalam bahasa Inggris dasar.",
+    rubric: "Kejelasan: 50%, Kosa Kata: 50%",
+    timeLimit: 60,
+    createdAt: new Date().toISOString(),
+    questions: [
+      { id: "q-seed-intro-1", prompt: "What is your name and where do you live?", focus: "identity", ideal: "I am [Name] and I live in [City]." },
+      { id: "q-seed-intro-2", prompt: "What are your hobbies?", focus: "hobby", ideal: "My hobbies are [Hobby 1] and [Hobby 2]." }
+    ]
+  };
+  await saveAssessment(authTeacher, a1);
+  console.log("Seeded/Updated Unanswered Assessment 1");
 
   // Assessment 2: Answered
-  let assessment2 = await db.get("SELECT * FROM assessments WHERE topic = ?", "Pengalaman Liburan (Bahasa Inggris)");
-  let a2Id = assessment2 ? assessment2.id : uid("assessment");
-  if (!assessment2) {
-    const a2 = {
-      id: a2Id,
-      classId: classroom.id,
-      topic: "Pengalaman Liburan (Bahasa Inggris)",
-      difficulty: "Menengah",
-      status: "published",
-      outcomes: "Siswa mampu menceritakan pengalaman masa lalu menggunakan past tense.",
-      rubric: "Past Tense: 40%, Kelancaran: 40%, Kosa Kata: 20%",
-      timeLimit: 0,
-      createdAt: new Date().toISOString(),
-      questions: [
-        { id: uid("q"), prompt: "Where did you go for your last holiday?", focus: "destination", ideal: "I went to [Place]." },
-        { id: uid("q"), prompt: "What did you do there?", focus: "activities", ideal: "I visited [Place] and ate [Food]." },
-        { id: uid("q"), prompt: "Did you enjoy it? Why?", focus: "feeling", ideal: "Yes, I enjoyed it because it was fun." }
-      ]
-    };
-    await saveAssessment(authTeacher, a2);
-    console.log("Created Answered Assessment 2");
-  } else {
-    console.log("Answered Assessment 2 already exists");
-  }
+  const a2Id = "assess-seed-pengalaman-liburan";
+  const a2 = {
+    id: a2Id,
+    classId: classroom.id,
+    topic: "Pengalaman Liburan (Bahasa Inggris)",
+    difficulty: "Menengah",
+    status: "published",
+    outcomes: "Siswa mampu menceritakan pengalaman masa lalu menggunakan past tense.",
+    rubric: "Past Tense: 40%, Kelancaran: 40%, Kosa Kata: 20%",
+    timeLimit: 0,
+    createdAt: new Date().toISOString(),
+    questions: [
+      { id: "q-seed-holiday-1", prompt: "Where did you go for your last holiday?", focus: "destination", ideal: "I went to [Place]." },
+      { id: "q-seed-holiday-2", prompt: "What did you do there?", focus: "activities", ideal: "I visited [Place] and ate [Food]." },
+      { id: "q-seed-holiday-3", prompt: "Did you enjoy it? Why?", focus: "feeling", ideal: "Yes, I enjoyed it because it was fun." }
+    ]
+  };
+  await saveAssessment(authTeacher, a2);
+  console.log("Seeded/Updated Answered Assessment 2");
 
   // 5. CREATE SUBMISSION
   let submission = await db.get("SELECT * FROM submissions WHERE assessment_id = ? AND user_id = ?", a2Id, student.id);
