@@ -40,7 +40,9 @@ export function recommendFallbackConfig(topic, difficulty = "Menengah") {
 export function evaluateFallbackAssessment(assessment, answers, studentName, makeSubmission) {
   const rubricKeywords = getKeywords(assessment.rubric, assessment.outcomes, assessment.topic);
   const questionScores = assessment.questions.map((question, index) => {
-    const answer = (answers[index] || "").toLowerCase();
+    const answerObj = answers[index];
+    const rawAnswer = typeof answerObj === 'string' ? answerObj : (answerObj?.text || "");
+    const answer = rawAnswer.toLowerCase();
     const words = answer.split(/\s+/).filter(Boolean);
     const matched = rubricKeywords.filter((keyword) => answer.includes(keyword.toLowerCase()));
     const focusMatched = answer.includes(question.focus.toLowerCase());
@@ -53,7 +55,9 @@ export function evaluateFallbackAssessment(assessment, answers, studentName, mak
     return {
       question: question.prompt,
       focus: question.focus,
-      answer: answers[index] || "",
+      answer: rawAnswer,
+      audio: typeof answerObj === 'string' ? null : (answerObj?.audio || null),
+      duration: typeof answerObj === 'string' ? 0 : (answerObj?.duration || 0),
       score,
       matched,
       strengths: buildStrengths(score, matched, focusMatched),

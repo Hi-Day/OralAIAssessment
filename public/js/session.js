@@ -23,19 +23,20 @@ export function createSession(state) {
     selectAssessment(assessmentId) {
       const assessment = state.assessments.find((item) => item.id === assessmentId);
       this.currentAssessmentId = assessmentId;
-      // Initialize with object containing text and audio
-      this.currentAnswers = Array(assessment?.questions.length || 0).fill(null).map(() => ({ text: "", audio: null }));
+      // Initialize with object containing text, audio, and duration
+      this.currentAnswers = Array(assessment?.questions.length || 0).fill(null).map(() => ({ text: "", audio: null, duration: 0 }));
       this.currentQuestionIndex = 0;
     },
 
-    saveAnswer(answer, audioBase64 = null) {
+    saveAnswer(answer, audioBase64 = null, elapsedSeconds = 0) {
       if (!this.currentAnswers[this.currentQuestionIndex]) {
-        this.currentAnswers[this.currentQuestionIndex] = { text: "", audio: null };
+        this.currentAnswers[this.currentQuestionIndex] = { text: "", audio: null, duration: 0 };
       }
       this.currentAnswers[this.currentQuestionIndex].text = (answer || "").trim();
       if (audioBase64) {
         this.currentAnswers[this.currentQuestionIndex].audio = audioBase64;
       }
+      this.currentAnswers[this.currentQuestionIndex].duration = (this.currentAnswers[this.currentQuestionIndex].duration || 0) + elapsedSeconds;
     },
 
     goPrevious() {

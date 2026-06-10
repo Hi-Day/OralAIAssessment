@@ -205,6 +205,16 @@ function renderTrendItem(trend) {
   `;
 }
 
+function formatDuration(seconds) {
+  if (!seconds) return "0 detik";
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m > 0) {
+    return `${m}m ${s}s`;
+  }
+  return `${s} detik`;
+}
+
 function renderFeedbackCard(item, index, auth) {
   const audioHtml = item.audio ? `<div style="margin-top: 12px; margin-bottom: 12px;"><audio controls src="${item.audio}" style="width: 100%; height: 36px;"></audio></div>` : '';
   
@@ -212,11 +222,12 @@ function renderFeedbackCard(item, index, auth) {
   const formatText = (text) => text ? text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>') : '';
   
   const isTeacher = auth && auth.user && auth.user.role === 'teacher';
+  const durationText = item.duration !== undefined ? ` | ⏱️ ${formatDuration(item.duration)}` : '';
 
   return `
     <article class="feedback-card" data-index="${index}">
       <div style="display: flex; justify-content: space-between; align-items: start;">
-        <strong>Soal ${index + 1} - Skor <span class="qs-score">${item.score}</span></strong>
+        <strong>Soal ${index + 1} - Skor <span class="qs-score">${item.score}</span>${durationText}</strong>
         <button type="button" class="action-button edit-override-btn ${isTeacher ? '' : 'hidden'}" data-index="${index}">Koreksi</button>
       </div>
       <p>${formatText(item.question)}</p>

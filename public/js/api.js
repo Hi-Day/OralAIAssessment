@@ -168,17 +168,18 @@ export async function evaluateAssessmentWithAI(assessment, answers, studentName,
     "Gagal menilai jawaban dengan AI"
   );
 
-  // Re-attach audio to the question scores so it can be saved in the submission payload
-  const questionScoresWithAudio = data.evaluation.questionScores.map((qs, idx) => ({
+  // Re-attach audio and duration to the question scores so it can be saved in the submission payload
+  const questionScoresWithMetadata = data.evaluation.questionScores.map((qs, idx) => ({
     ...qs,
-    audio: answers[idx]?.audio || null
+    audio: answers[idx]?.audio || null,
+    duration: answers[idx]?.duration || 0
   }));
 
   return makeSubmission({
     assessment,
     studentName,
     finalScore: data.evaluation.finalScore,
-    questionScores: questionScoresWithAudio,
+    questionScores: questionScoresWithMetadata,
     feedback: data.evaluation.feedback,
   });
 }

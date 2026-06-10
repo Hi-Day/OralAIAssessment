@@ -297,7 +297,8 @@ export async function initApp() {
 
   async function saveCurrentAnswer() {
     const audio = await recorder.getAudioBase64();
-    session.saveAnswer(els.answerText.value, audio);
+    const elapsed = Math.round((Date.now() - questionStartTime) / 1000);
+    session.saveAnswer(els.answerText.value, audio, elapsed);
     recorder.clearAudio();
   }
 
@@ -473,6 +474,7 @@ export async function initApp() {
 
   let questionTimerInterval = null;
   let currentQuestionTimeLeft = 0;
+  let questionStartTime = Date.now();
 
   function stopQuestionTimer() {
     if (questionTimerInterval) {
@@ -826,6 +828,7 @@ export async function initApp() {
           renderCurrentState(); // This will trigger the toggle to workspace
           recorder.resetStatus();
           startQuestionTimer();
+          questionStartTime = Date.now();
         }
       });
     }
@@ -854,6 +857,7 @@ export async function initApp() {
       renderQuestion(els, session.getCurrentAssessment(), session);
       recorder.resetStatus();
       startQuestionTimer();
+      questionStartTime = Date.now();
     });
 
     els.saveAnswer.addEventListener("click", async () => {
@@ -863,6 +867,7 @@ export async function initApp() {
       renderQuestion(els, session.getCurrentAssessment(), session);
       recorder.resetStatus();
       startQuestionTimer();
+      questionStartTime = Date.now();
     });
 
     els.finishAssessment.addEventListener("click", (e) => {
