@@ -717,6 +717,48 @@ body.student-mode .topbar { padding-bottom: 24px; border-bottom: 2px solid var(-
 
 .data-table th, .data-table td { white-space: nowrap; }
 
+/* Toast Notifications */
+#toastContainer {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 9999;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  animation: slideIn 0.3s ease-out forwards;
+  min-width: 300px;
+  max-width: 450px;
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.toast.fade-out {
+  animation: fadeOut 0.3s ease-in forwards;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.9); }
+}
+
 .toast-error { border-left: 4px solid var(--rose); }
 .toast-success { border-left: 4px solid var(--emerald); }
 .toast-info { border-left: 4px solid var(--accent); }
