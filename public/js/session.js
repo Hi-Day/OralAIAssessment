@@ -23,8 +23,13 @@ export function createSession(state) {
     selectAssessment(assessmentId) {
       const assessment = state.assessments.find((item) => item.id === assessmentId);
       this.currentAssessmentId = assessmentId;
-      // Initialize with object containing text, audio, and duration
-      this.currentAnswers = Array(assessment?.questions.length || 0).fill(null).map(() => ({ text: "", audio: null, duration: 0 }));
+      // Initialize with object containing text, audio, duration, and remaining time
+      this.currentAnswers = Array(assessment?.questions.length || 0).fill(null).map(() => ({
+        text: "",
+        audio: null,
+        duration: 0,
+        timeLeft: assessment?.timeLimit || 0
+      }));
       this.currentQuestionIndex = 0;
     },
 

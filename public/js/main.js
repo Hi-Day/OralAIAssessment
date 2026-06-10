@@ -490,10 +490,32 @@ export async function initApp() {
     if (!assessment || !assessment.timeLimit || assessment.timeLimit <= 0) {
       if (els.timerDisplay) els.timerDisplay.style.display = "none";
       if (els.recordButton) els.recordButton.disabled = false;
+      if (els.answerText) els.answerText.disabled = false;
       return;
     }
 
-    currentQuestionTimeLeft = assessment.timeLimit;
+    const currentAnswer = session.currentAnswers[session.currentQuestionIndex];
+    if (!currentAnswer) return;
+
+    if (currentAnswer.timeLeft === undefined) {
+      currentAnswer.timeLeft = assessment.timeLimit;
+    }
+
+    currentQuestionTimeLeft = currentAnswer.timeLeft;
+
+    if (currentQuestionTimeLeft <= 0) {
+      if (els.timerDisplay) {
+        els.timerDisplay.style.display = "inline-flex";
+        els.timerDisplay.style.color = "var(--rose)";
+        els.timerDisplay.style.borderColor = "var(--rose)";
+        els.timerDisplay.innerHTML = `<strong>Waktu Habis</strong>`;
+      }
+      if (els.recordButton) els.recordButton.disabled = true;
+      if (els.answerText) els.answerText.disabled = true;
+      recorder.stop();
+      return;
+    }
+
     if (els.timerDisplay) {
       els.timerDisplay.style.display = "inline-flex";
       els.timerDisplay.style.color = "var(--rose)";
@@ -501,9 +523,12 @@ export async function initApp() {
       els.timerDisplay.innerHTML = `<strong>${formatTime(currentQuestionTimeLeft)}</strong> tersisa`;
     }
     if (els.recordButton) els.recordButton.disabled = false;
+    if (els.answerText) els.answerText.disabled = false;
 
     questionTimerInterval = setInterval(() => {
       currentQuestionTimeLeft--;
+      currentAnswer.timeLeft = currentQuestionTimeLeft;
+
       if (currentQuestionTimeLeft <= 0) {
         stopQuestionTimer();
         handleTimeOut();
@@ -522,6 +547,7 @@ export async function initApp() {
     if (els.timerDisplay) els.timerDisplay.innerHTML = `<strong>Waktu Habis</strong>`;
     recorder.stop();
     if (els.recordButton) els.recordButton.disabled = true;
+    if (els.answerText) els.answerText.disabled = true;
     showToast("Waktu habis! Silakan simpan dan lanjut ke soal berikutnya.", "error");
   }
 
