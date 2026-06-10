@@ -471,6 +471,64 @@ export async function initApp() {
 
 
 
+  let questionTimerInterval = null;
+  let currentQuestionTimeLeft = 0;
+
+  function stopQuestionTimer() {
+    if (questionTimerInterval) {
+      clearInterval(questionTimerInterval);
+      questionTimerInterval = null;
+    }
+    if (els.timerDisplay) els.timerDisplay.style.animation = "none";
+  }
+
+  function startQuestionTimer() {
+    stopQuestionTimer();
+    const assessment = session.getCurrentAssessment();
+    if (!assessment || !assessment.timeLimit || assessment.timeLimit <= 0) {
+      if (els.timerDisplay) els.timerDisplay.style.display = "none";
+      if (els.recordButton) els.recordButton.disabled = false;
+      return;
+    }
+
+    currentQuestionTimeLeft = assessment.timeLimit;
+    if (els.timerDisplay) {
+      els.timerDisplay.style.display = "inline-flex";
+      els.timerDisplay.style.color = "var(--rose)";
+      els.timerDisplay.style.borderColor = "var(--rose)";
+      els.timerDisplay.innerHTML = `<strong>${formatTime(currentQuestionTimeLeft)}</strong> tersisa`;
+    }
+    if (els.recordButton) els.recordButton.disabled = false;
+
+    questionTimerInterval = setInterval(() => {
+      currentQuestionTimeLeft--;
+      if (currentQuestionTimeLeft <= 0) {
+        stopQuestionTimer();
+        handleTimeOut();
+      } else {
+        if (els.timerDisplay) {
+          els.timerDisplay.innerHTML = `<strong>${formatTime(currentQuestionTimeLeft)}</strong> tersisa`;
+          if (currentQuestionTimeLeft <= 10) {
+            els.timerDisplay.style.animation = "pulseRed 1s infinite";
+          }
+        }
+      }
+    }, 1000);
+  }
+
+  function handleTimeOut() {
+    if (els.timerDisplay) els.timerDisplay.innerHTML = `<strong>Waktu Habis</strong>`;
+    recorder.stop();
+    if (els.recordButton) els.recordButton.disabled = true;
+    showToast("Waktu habis! Silakan simpan dan lanjut ke soal berikutnya.", "error");
+  }
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
   async function handleCreateUser(event) {
     event.preventDefault();
     setButtonLoading(event.submitter, true, "Membuat akun...", "Buat akun");
@@ -767,6 +825,7 @@ export async function initApp() {
           els.resultPanel.classList.add("hidden");
           renderCurrentState(); // This will trigger the toggle to workspace
           recorder.resetStatus();
+          startQuestionTimer();
         }
       });
     }
@@ -774,6 +833,7 @@ export async function initApp() {
     if (els.backToDashboard) {
       els.backToDashboard.addEventListener("click", () => {
         recorder.stop();
+        stopQuestionTimer();
         session.currentAssessmentId = null;
         renderCurrentState(); // Will hide workspace, show dashboard
       });
@@ -793,6 +853,7 @@ export async function initApp() {
       session.goPrevious();
       renderQuestion(els, session.getCurrentAssessment(), session);
       recorder.resetStatus();
+      startQuestionTimer();
     });
 
     els.saveAnswer.addEventListener("click", async () => {
@@ -801,9 +862,13 @@ export async function initApp() {
       session.goNext();
       renderQuestion(els, session.getCurrentAssessment(), session);
       recorder.resetStatus();
+      startQuestionTimer();
     });
 
-    els.finishAssessment.addEventListener("click", handleFinishAssessment);
+    els.finishAssessment.addEventListener("click", (e) => {
+      stopQuestionTimer();
+      handleFinishAssessment(e);
+    });
 
     els.seedDemo.addEventListener("click", () => {
       if (state.assessments.length) return;

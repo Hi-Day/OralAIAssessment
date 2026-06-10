@@ -11,6 +11,7 @@ export function readAssessmentForm(els) {
     classId: els.classSelect.value,
     status: "published",
     count: Number(els.questionCount.value),
+    timeLimit: Number(els.timeLimit.value || 0),
     createdAt: new Date().toISOString(),
   };
 }

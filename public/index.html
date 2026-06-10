@@ -129,7 +129,7 @@
                 <textarea id="rubric" required rows="5" placeholder="Contoh: ketepatan konsep 40%, kelengkapan alasan 30%, contoh relevan 20%, komunikasi 10%"></textarea>
               </label>
 
-              <div class="form-row">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                 <label>
                   Kelas tujuan
                   <select id="classSelect" required></select>
@@ -142,9 +142,21 @@
                     <option>Lanjutan</option>
                   </select>
                 </label>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                 <label>
                   Jumlah soal
-                  <input id="questionCount" type="number" min="3" max="8" value="5" />
+                  <input id="questionCount" type="number" min="1" max="10" value="5" />
+                </label>
+                <label>
+                  Batas waktu per soal
+                  <select id="timeLimit">
+                    <option value="0">Tanpa batas waktu</option>
+                    <option value="30">30 Detik</option>
+                    <option value="60">1 Menit</option>
+                    <option value="120">2 Menit</option>
+                    <option value="180">3 Menit</option>
+                  </select>
                 </label>
               </div>
 
@@ -225,7 +237,10 @@
               <div class="question-card">
               <div class="question-meta">
                 <span id="questionProgress">Soal 1 dari 5</span>
-                <span id="activeDifficulty">Menengah</span>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <span id="timerDisplay" class="metric-pill" style="display: none; color: var(--rose); border-color: var(--rose); background: #fff1f2; animation: none;"><strong>00:00</strong> tersisa</span>
+                  <span id="activeDifficulty">Menengah</span>
+                </div>
               </div>
               <h3 id="activeQuestion">Pertanyaan akan muncul di sini.</h3>
               <p id="activeHint">Jawab dengan jelas, gunakan istilah kunci, dan berikan alasan.</p>

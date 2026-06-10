@@ -63,6 +63,8 @@ export function getElements() {
     outcomes: document.querySelector("#outcomes"),
     rubric: document.querySelector("#rubric"),
     difficulty: document.querySelector("#difficulty"),
+    timeLimit: document.querySelector("#timeLimit"),
+    timerDisplay: document.querySelector("#timerDisplay"),
     examples: document.querySelector("#examples"),
     questionCount: document.querySelector("#questionCount"),
     classSelect: document.querySelector("#classSelect"),
