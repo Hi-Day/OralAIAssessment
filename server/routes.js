@@ -115,6 +115,14 @@ async function handleApiRequest(req, res, url) {
     return sendJson(res, 201, { user });
   }
 
+  if (url.pathname === "/api/users/batch") {
+    requireRole(auth, ["admin"]);
+    const payload = await readJson(req);
+    const { createTenantUsersBatch } = require("./auth-service");
+    const result = await createTenantUsersBatch(auth.tenant.id, payload);
+    return sendJson(res, 201, result);
+  }
+
   if (url.pathname === "/api/generate-questions") {
     requireRole(auth, ["admin", "teacher"]);
     const body = await readJson(req);

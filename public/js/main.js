@@ -485,9 +485,54 @@ export async function initApp() {
       els.userForm.reset();
       renderUsers();
     } catch (error) {
-      showToast(error.message);
+      showToast(error.message, "error");
     } finally {
       setButtonLoading(event.submitter, false, "Membuat akun...", "Buat akun");
+    }
+  }
+
+  async function handleCsvUpload(event) {
+    event.preventDefault();
+    const file = els.csvFile.files[0];
+    if (!file) return;
+
+    setButtonLoading(event.submitter, true, "Memproses...", "Upload & Proses CSV");
+    
+    try {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+      
+      const payload = lines.map(line => {
+        const [name, email, role, password] = line.split(",").map(item => item.trim());
+        return { name, email, role, password };
+      });
+
+      if (payload.length === 0) {
+        throw new Error("File CSV kosong atau format tidak valid");
+      }
+
+      const response = await createUsersBatch(payload);
+      
+      if (response.success && response.success.length > 0) {
+        users.unshift(...response.success);
+        renderUsers();
+      }
+      
+      const successCount = response.success ? response.success.length : 0;
+      const errorCount = response.errors ? response.errors.length : 0;
+      
+      if (errorCount === 0) {
+        showToast(`Berhasil membuat ${successCount} akun baru dari CSV.`, "success");
+        els.csvForm.reset();
+      } else {
+        const errMsg = response.errors[0]?.message || "Beberapa baris gagal";
+        showToast(`Selesai. Sukses: ${successCount}. Gagal: ${errorCount} (${errMsg})`, "error");
+        els.csvForm.reset();
+      }
+    } catch (error) {
+      showToast(error.message || "Gagal memproses file CSV", "error");
+    } finally {
+      setButtonLoading(event.submitter, false, "Memproses...", "Upload & Proses CSV");
     }
   }
 
@@ -557,6 +602,7 @@ export async function initApp() {
     els.saveQuestionSet.addEventListener("click", savePendingQuestionSet);
     els.improveQuestionSet.addEventListener("click", improvePendingQuestionSet);
     els.userForm.addEventListener("submit", handleCreateUser);
+    els.csvForm.addEventListener("submit", handleCsvUpload);
     els.recommendOutcomes.addEventListener("click", () => fillRecommendedFields("outcomes"));
     els.recommendRubric.addEventListener("click", () => fillRecommendedFields("rubric"));
 

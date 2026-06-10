@@ -51,6 +51,11 @@ export async function createUser(payload) {
   return data.user;
 }
 
+export async function createUsersBatch(payload) {
+  const data = await postJson("/api/users/batch", payload, "Gagal membuat user batch");
+  return data;
+}
+
 export async function updateUser(userId, payload) {
   const data = await sendJson(`/api/users/${encodeURIComponent(userId)}`, "PUT", payload, "Gagal mengubah user");
   return data.user;

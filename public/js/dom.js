@@ -19,6 +19,8 @@ export function getElements() {
     adminNav: document.querySelector("#adminNav"),
     accountView: document.querySelector("#accountView"),
     userForm: document.querySelector("#userForm"),
+    csvForm: document.querySelector("#csvForm"),
+    csvFile: document.querySelector("#csvFile"),
     userName: document.querySelector("#userName"),
     userEmail: document.querySelector("#userEmail"),
     userPassword: document.querySelector("#userPassword"),

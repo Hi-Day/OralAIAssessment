@@ -379,28 +379,38 @@
           </div>
 
           <div class="account-grid">
-            <form id="userForm" class="form-panel">
-              <label>
-                Nama
-                <input id="userName" required placeholder="Contoh: Budi Santoso" />
-              </label>
-              <label>
-                Email
-                <input id="userEmail" type="text" inputmode="email" required placeholder="nama@sekolah.sch.id" />
-              </label>
-              <label>
-                Password
-                <input id="userPassword" type="password" minlength="8" required placeholder="Minimal 8 karakter" />
-              </label>
-              <label>
-                Role
-                <select id="userRole">
-                  <option value="teacher">Guru</option>
-                  <option value="student">Siswa</option>
-                </select>
-              </label>
-              <button class="primary-button" type="submit">Buat akun</button>
-            </form>
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              <form id="userForm" class="form-panel">
+                <h3>Buat akun tunggal</h3>
+                <label>
+                  Nama
+                  <input id="userName" required placeholder="Contoh: Budi Santoso" />
+                </label>
+                <label>
+                  Email
+                  <input id="userEmail" type="text" inputmode="email" required placeholder="nama@sekolah.sch.id" />
+                </label>
+                <label>
+                  Password
+                  <input id="userPassword" type="password" minlength="8" required placeholder="Minimal 8 karakter" />
+                </label>
+                <label>
+                  Role
+                  <select id="userRole">
+                    <option value="teacher">Guru</option>
+                    <option value="student">Siswa</option>
+                  </select>
+                </label>
+                <button class="primary-button" type="submit">Buat akun</button>
+              </form>
+
+              <form id="csvForm" class="form-panel">
+                <h3>Buat banyak akun (CSV)</h3>
+                <p style="color: var(--muted); font-size: 0.9rem; margin-top: -12px;">Format (tanpa header): <strong>nama, email, role (teacher/student), password</strong></p>
+                <input type="file" id="csvFile" accept=".csv" required style="padding: 8px;" />
+                <button class="secondary-button" type="submit">Upload & Proses CSV</button>
+              </form>
+            </div>
 
             <div class="preview-panel">
               <h3>Daftar akun tenant</h3>

@@ -249,10 +249,31 @@ function mapUser(row) {
   };
 }
 
+async function createTenantUsersBatch(tenantId, users) {
+  const success = [];
+  const errors = [];
+
+  for (const [index, userPayload] of users.entries()) {
+    try {
+      const user = await createTenantUser(tenantId, userPayload);
+      success.push(user);
+    } catch (error) {
+      errors.push({
+        row: index + 1,
+        email: userPayload.email,
+        message: error.message
+      });
+    }
+  }
+
+  return { success, errors };
+}
+
 module.exports = {
   SESSION_COOKIE,
   SESSION_MAX_AGE_SECONDS,
   createTenantUser,
+  createTenantUsersBatch,
   createSession,
   deleteTenantUser,
   deleteSession,
