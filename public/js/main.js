@@ -543,12 +543,29 @@ export async function initApp() {
     }, 1000);
   }
 
-  function handleTimeOut() {
+  async function handleTimeOut() {
     if (els.timerDisplay) els.timerDisplay.innerHTML = `<strong>Waktu Habis</strong>`;
     recorder.stop();
     if (els.recordButton) els.recordButton.disabled = true;
     if (els.answerText) els.answerText.disabled = true;
-    showToast("Waktu habis! Silakan simpan dan lanjut ke soal berikutnya.", "error");
+    showToast("Waktu habis! Jawaban disimpan secara otomatis.", "error");
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    await saveCurrentAnswer();
+
+    const assessment = session.getCurrentAssessment();
+    if (!assessment) return;
+
+    const isLastQuestion = session.currentQuestionIndex === assessment.questions.length - 1;
+    if (isLastQuestion) {
+      await handleFinishAssessment();
+    } else {
+      session.goNext();
+      renderQuestion(els, assessment, session);
+      recorder.resetStatus();
+      startQuestionTimer();
+      questionStartTime = Date.now();
+    }
   }
 
   function formatTime(seconds) {
