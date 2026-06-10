@@ -14,7 +14,8 @@ const mimeTypes = {
 };
 
 function serveStaticFile(res, root, pathname) {
-  const filePath = resolveStaticPath(root, pathname);
+  const publicDir = path.join(root, "public");
+  const filePath = resolveStaticPath(publicDir, pathname);
   if (!filePath) return sendJson(res, 404, { error: "Not found" });
 
   const ext = path.extname(filePath);
