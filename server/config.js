@@ -18,7 +18,7 @@ function loadEnv() {
   }
 
   process.env.OPENROUTER_MODEL ||= DEFAULT_MODEL;
-  process.env.TURSO_DATABASE_URL ||= `file:${path.join(ROOT, "data", "oralai.db")}`;
+  process.env.TURSO_DATABASE_URL ||= `file:${path.join(ROOT, "data", "lisan_ai.db")}`;
 }
 
 module.exports = {

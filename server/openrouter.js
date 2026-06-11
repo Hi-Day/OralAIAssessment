@@ -11,7 +11,7 @@ async function callOpenRouter(messages, schemaHint) {
       Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
       "Content-Type": "application/json",
       "HTTP-Referer": "http://127.0.0.1:4173",
-      "X-Title": "OralAI Assessment",
+      "X-Title": "Lisan.ai",
     },
     body: JSON.stringify({
       model: process.env.OPENROUTER_MODEL,

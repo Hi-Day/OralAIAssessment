@@ -1,4 +1,4 @@
-# OralAI Assessment
+# Lisan.ai
 
 Platform assessment lisan berbasis AI untuk guru dan siswa dengan multi-tenant, kelas, approval join, speech input, dan evaluasi berbasis rubrik.
 
@@ -51,28 +51,28 @@ Jika database lokal yang sudah dibuat masih ada, akun demo:
 
 ```txt
 Admin
-Email: auth932352@example.com
+Email: admin@lisan.ai
 Password: password123
 ```
 
 ```txt
 Guru
-Email: guru.demo@oralai.test
+Email: guru@lisan.ai
 Password: password123
 ```
 
 ```txt
 Siswa
-Email: siswa.demo@oralai.test
+Email: siswa@lisan.ai
 Password: password123
 ```
 
-Jika `data/oralai.db` dihapus, buat tenant baru dari halaman register.
+Jika `data/lisan_ai.db` dihapus, buat tenant baru dari halaman register.
 
 ## Data dan Keamanan
 
 - `.env` tidak boleh di-commit.
-- Database lokal tersimpan di `data/oralai.db`.
+- Database lokal tersimpan di `data/lisan_ai.db`.
 - Session memakai cookie HttpOnly.
 - Password disimpan dengan hash `scrypt`.
 - API assessment, kelas, user, dan submission diproteksi oleh role.

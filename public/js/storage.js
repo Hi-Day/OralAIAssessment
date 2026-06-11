@@ -1,7 +1,7 @@
 import { DEFAULT_STATE } from "./config.js";
 import { loadStateFromDatabase, saveAssessmentToDatabase, saveSubmissionToDatabase } from "./api.js";
 
-const LEGACY_STORAGE_KEY = "oralai-assessment-state";
+const LEGACY_STORAGE_KEY = "lisanai-assessment-state";
 
 export async function loadState() {
   try {

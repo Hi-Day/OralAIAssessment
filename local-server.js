@@ -44,7 +44,7 @@ if (require.main === module) {
   initDatabase()
     .then(() => {
       server.listen(PORT, "127.0.0.1", () => {
-        console.log(`OralAI running at http://127.0.0.1:${PORT}`);
+        console.log(`Lisan.ai running at http://127.0.0.1:${PORT}`);
         console.log(`Using OpenRouter model: ${process.env.OPENROUTER_MODEL}`);
       });
     })

@@ -13,8 +13,8 @@ async function seedSimulationData() {
   console.log("Generating simulation data...");
 
   // 1. Get Teacher and Student accounts
-  const teacher = await db.get("SELECT * FROM users WHERE email = 'guru@oralai.test'");
-  const student = await db.get("SELECT * FROM users WHERE email = 'siswa@oralai.test'");
+  const teacher = await db.get("SELECT * FROM users WHERE email = 'guru@lisan.ai'");
+  const student = await db.get("SELECT * FROM users WHERE email = 'siswa@lisan.ai'");
 
   if (!teacher || !student) {
     console.error("Test accounts not found. Please run seed-accounts.js first.");

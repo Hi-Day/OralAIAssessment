@@ -1,7 +1,7 @@
 const crypto = require("node:crypto");
 const { getDb } = require("./database");
 
-const SESSION_COOKIE = "oralai_session";
+const SESSION_COOKIE = "lisan_session";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 function uid(prefix) {

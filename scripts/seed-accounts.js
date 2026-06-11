@@ -21,14 +21,14 @@ async function seedTestAccounts() {
     const res = await registerTenantUser({
       tenantName: "Demo School",
       name: "Admin Demo",
-      email: "admin@oralai.test",
+      email: "admin@lisan.ai",
       password: testPassword,
     });
     adminUser = res.user;
     console.log("Created Admin account:", adminUser.email);
   } catch (err) {
     if (err.message === "Email sudah terdaftar") {
-      adminUser = await db.get("SELECT * FROM users WHERE email = ?", "admin@oralai.test");
+      adminUser = await db.get("SELECT * FROM users WHERE email = ?", "admin@lisan.ai");
       console.log("Admin account already exists:", adminUser.email);
     } else {
       console.error("Error creating admin:", err);
@@ -42,14 +42,14 @@ async function seedTestAccounts() {
   try {
     teacher = await createTenantUser(tenantId, {
       name: "Guru Demo",
-      email: "guru@oralai.test",
+      email: "guru@lisan.ai",
       password: testPassword,
       role: "teacher"
     });
     console.log("Created Teacher account:", teacher.email);
   } catch (err) {
     if (err.message === "Email sudah terdaftar") {
-      teacher = await db.get("SELECT * FROM users WHERE email = ?", "guru@oralai.test");
+      teacher = await db.get("SELECT * FROM users WHERE email = ?", "guru@lisan.ai");
       console.log("Teacher account already exists:", teacher.email);
     }
   }
@@ -59,14 +59,14 @@ async function seedTestAccounts() {
   try {
     student = await createTenantUser(tenantId, {
       name: "Siswa Demo",
-      email: "siswa@oralai.test",
+      email: "siswa@lisan.ai",
       password: testPassword,
       role: "student"
     });
     console.log("Created Student account:", student.email);
   } catch (err) {
     if (err.message === "Email sudah terdaftar") {
-      student = await db.get("SELECT * FROM users WHERE email = ?", "siswa@oralai.test");
+      student = await db.get("SELECT * FROM users WHERE email = ?", "siswa@lisan.ai");
       console.log("Student account already exists:", student.email);
     }
   }
