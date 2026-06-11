@@ -2,7 +2,6 @@ const http = require("node:http");
 const { PORT, ROOT, loadEnv } = require("./server/config");
 const { initDatabase } = require("./server/database");
 const { sendJson } = require("./server/http-utils");
-const { handleApiRequest } = require("./server/routes");
 const { serveStaticFile } = require("./server/static");
 
 loadEnv();
@@ -18,7 +17,13 @@ const requestHandler = async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
 
     if (url.pathname.startsWith("/api/")) {
-      return await handleApiRequest(req, res, url);
+      const endpointName = url.pathname.replace("/api/", "");
+      try {
+        const handler = require(`./api/${endpointName}`);
+        return await handler(req, res);
+      } catch (err) {
+        return sendJson(res, 404, { error: "API endpoint not found" });
+      }
     }
 
     if (req.method !== "GET") {
