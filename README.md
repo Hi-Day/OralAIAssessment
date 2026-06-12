@@ -47,7 +47,9 @@ http://127.0.0.1:4173
 
 ## Akun Test Lokal
 
-Jika database lokal yang sudah dibuat masih ada, akun demo:
+Jika database lokal yang sudah dibuat masih ada, Anda bisa masuk menggunakan akun demo berikut:
+
+### Tenant 1: Demo School
 
 ```txt
 Admin
@@ -64,6 +66,26 @@ Password: password123
 ```txt
 Siswa
 Email: siswa@lisan.ai
+Password: password123
+```
+
+### Tenant 2: SMA Bina Nusantara
+
+```txt
+Admin
+Email: admin.binus@lisan.ai
+Password: password123
+```
+
+```txt
+Guru
+Email: guru.binus@lisan.ai
+Password: password123
+```
+
+```txt
+Siswa
+Email: siswa.binus@lisan.ai
 Password: password123
 ```
 
