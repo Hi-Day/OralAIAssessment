@@ -74,7 +74,11 @@ async function evaluateAnswers(payload) {
   return {
     finalScore: clampScore(result.finalScore),
     feedback: String(result.feedback || "Feedback belum tersedia."),
-    questionScores: result.questionScores.map(normalizeQuestionScore),
+    questionScores: result.questionScores.map((item, index) => {
+      const normalized = normalizeQuestionScore(item);
+      normalized.answer = payload.answers[index] || "";
+      return normalized;
+    }),
   };
 }
 
