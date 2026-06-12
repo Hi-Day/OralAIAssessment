@@ -158,7 +158,7 @@ export async function initApp() {
         <article class="submission-item" data-id="${item.id}">
           <div style="flex: 1; min-width: 0;">
             <strong>${item.name}</strong>
-            <p>Kode: ${item.join_code || item.joinCode || "-"} - ${item.status}</p>
+            <p>Kode: <b>${item.join_code || item.joinCode || "-"}</b></p>
             ${!isStudent ? `
               <div class="item-actions">
                 <button type="button" class="action-button edit-class">Edit</button>
