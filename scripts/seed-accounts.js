@@ -9,72 +9,45 @@ function uid(prefix) {
 }
 
 async function seedTenantData(db, config) {
-  const { tenantName, adminEmail, teacherEmail, studentEmail, className, testPassword, a1Config, a2Config, submissionConfig } = config;
+  const { tenantName, adminEmail, teacherEmail, studentEmail, className, testPassword, assessments } = config;
 
   // 1. CREATE USERS
   let adminUser;
   try {
-    const res = await registerTenantUser({
-      tenantName,
-      name: "Admin " + tenantName,
-      email: adminEmail,
-      password: testPassword,
-    });
+    const res = await registerTenantUser({ tenantName, name: "Admin " + tenantName, email: adminEmail, password: testPassword });
     adminUser = res.user;
     console.log(`[${tenantName}] Created Admin:`, adminUser.email);
   } catch (err) {
     if (err.message === "Email sudah terdaftar") {
       adminUser = await db.get("SELECT * FROM users WHERE email = ?", adminEmail);
       console.log(`[${tenantName}] Admin already exists:`, adminUser.email);
-    } else {
-      console.error(`[${tenantName}] Error creating admin:`, err);
-      return;
-    }
+    } else return;
   }
 
   const tenantId = adminUser.tenant_id || adminUser.tenantId;
 
   let teacher;
   try {
-    teacher = await createTenantUser(tenantId, {
-      name: "Guru " + tenantName,
-      email: teacherEmail,
-      password: testPassword,
-      role: "teacher"
-    });
+    teacher = await createTenantUser(tenantId, { name: "Guru " + tenantName, email: teacherEmail, password: testPassword, role: "teacher" });
     console.log(`[${tenantName}] Created Teacher:`, teacher.email);
   } catch (err) {
-    if (err.message === "Email sudah terdaftar") {
-      teacher = await db.get("SELECT * FROM users WHERE email = ?", teacherEmail);
-    }
+    if (err.message === "Email sudah terdaftar") teacher = await db.get("SELECT * FROM users WHERE email = ?", teacherEmail);
   }
   teacher.id = teacher.id || teacher.user_id;
 
   let student;
   try {
-    student = await createTenantUser(tenantId, {
-      name: "Siswa " + tenantName,
-      email: studentEmail,
-      password: testPassword,
-      role: "student"
-    });
+    student = await createTenantUser(tenantId, { name: "Siswa " + tenantName, email: studentEmail, password: testPassword, role: "student" });
     console.log(`[${tenantName}] Created Student:`, student.email);
   } catch (err) {
-    if (err.message === "Email sudah terdaftar") {
-      student = await db.get("SELECT * FROM users WHERE email = ?", studentEmail);
-    }
+    if (err.message === "Email sudah terdaftar") student = await db.get("SELECT * FROM users WHERE email = ?", studentEmail);
   }
   student.id = student.id || student.user_id;
 
   // 2. CREATE CLASSROOM
   let classroom = await db.get("SELECT * FROM classes WHERE tenant_id = ? AND teacher_id = ?", tenantId, teacher.id);
   if (!classroom) {
-    classroom = {
-      id: uid("class"),
-      name: className,
-      joinCode: crypto.randomBytes(4).toString("hex").toUpperCase(),
-      createdAt: new Date().toISOString()
-    };
+    classroom = { id: uid("class"), name: className, joinCode: crypto.randomBytes(4).toString("hex").toUpperCase(), createdAt: new Date().toISOString() };
     await createClass(tenantId, teacher.id, classroom);
     console.log(`[${tenantName}] Created Classroom:`, classroom.name);
   } else {
@@ -93,57 +66,41 @@ async function seedTenantData(db, config) {
     console.log(`[${tenantName}] Membership already exists`);
   }
 
-  // 4. CREATE ASSESSMENTS
+  // 4. CREATE ASSESSMENTS & SUBMISSIONS
   const authTeacher = { tenant: { id: tenantId }, user: { id: teacher.id, role: "teacher" } };
 
-  // Assessment 1: Unanswered
-  const a1 = {
-    id: a1Config.id,
-    classId: classroom.id,
-    topic: a1Config.topic,
-    difficulty: "Pemula",
-    status: "published",
-    outcomes: a1Config.outcomes,
-    rubric: a1Config.rubric,
-    timeLimit: 60,
-    createdAt: new Date().toISOString(),
-    questions: a1Config.questions
-  };
-  await saveAssessment(authTeacher, a1);
-  console.log(`[${tenantName}] Seeded Unanswered Assessment`);
-
-  // Assessment 2: Answered
-  const a2 = {
-    id: a2Config.id,
-    classId: classroom.id,
-    topic: a2Config.topic,
-    difficulty: "Menengah",
-    status: "published",
-    outcomes: a2Config.outcomes,
-    rubric: a2Config.rubric,
-    timeLimit: 0,
-    createdAt: new Date().toISOString(),
-    questions: a2Config.questions
-  };
-  await saveAssessment(authTeacher, a2);
-  console.log(`[${tenantName}] Seeded Answered Assessment`);
-
-  // 5. CREATE SUBMISSION
-  let submission = await db.get("SELECT * FROM submissions WHERE assessment_id = ? AND user_id = ?", a2Config.id, student.id);
-  if (!submission) {
-    const sub = {
-      id: uid("submission"),
-      assessmentId: a2Config.id,
-      studentName: student.name,
-      finalScore: submissionConfig.finalScore,
-      submittedAt: new Date().toISOString(),
-      questionScores: submissionConfig.questionScores,
-      feedback: submissionConfig.feedback
+  for (const aConfig of assessments) {
+    const assessment = {
+      id: aConfig.id,
+      classId: classroom.id,
+      topic: aConfig.topic,
+      difficulty: aConfig.difficulty || "Menengah",
+      status: "published",
+      outcomes: aConfig.outcomes,
+      rubric: aConfig.rubric,
+      timeLimit: aConfig.timeLimit !== undefined ? aConfig.timeLimit : 0,
+      createdAt: aConfig.createdAt || new Date().toISOString(),
+      questions: aConfig.questions
     };
-    await saveSubmission(tenantId, student.id, sub);
-    console.log(`[${tenantName}] Created Submission`);
-  } else {
-    console.log(`[${tenantName}] Submission already exists`);
+    await saveAssessment(authTeacher, assessment);
+    console.log(`[${tenantName}] Seeded Assessment: ${assessment.topic}`);
+
+    if (aConfig.submission) {
+      let submission = await db.get("SELECT * FROM submissions WHERE assessment_id = ? AND user_id = ?", aConfig.id, student.id);
+      if (!submission) {
+        const sub = {
+          id: uid("submission"),
+          assessmentId: aConfig.id,
+          studentName: student.name,
+          finalScore: aConfig.submission.finalScore,
+          submittedAt: aConfig.submission.submittedAt || new Date().toISOString(),
+          questionScores: aConfig.submission.questionScores,
+          feedback: aConfig.submission.feedback
+        };
+        await saveSubmission(tenantId, student.id, sub);
+        console.log(`[${tenantName}] Created Submission for: ${assessment.topic}`);
+      }
+    }
   }
 }
 
@@ -153,6 +110,9 @@ async function seedTestAccounts() {
   console.log("Seeding multi-tenant demo data...");
 
   const testPassword = "password123";
+  
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
 
   // TENANT 1: Demo School
   await seedTenantData(db, {
@@ -162,36 +122,85 @@ async function seedTestAccounts() {
     studentEmail: "siswa@lisan.ai",
     className: "Kelas Bahasa Inggris X-A",
     testPassword,
-    a1Config: {
-      id: "assess-seed-perkenalan-diri",
-      topic: "Perkenalan Diri (Bahasa Inggris)",
-      outcomes: "Siswa mampu memperkenalkan diri dalam bahasa Inggris dasar.",
-      rubric: "Kejelasan: 50%, Kosa Kata: 50%",
-      questions: [
-        { id: "q-seed-intro-1", prompt: "What is your name and where do you live?", focus: "identity", ideal: "I am [Name] and I live in [City]." },
-        { id: "q-seed-intro-2", prompt: "What are your hobbies?", focus: "hobby", ideal: "My hobbies are [Hobby 1] and [Hobby 2]." }
-      ]
-    },
-    a2Config: {
-      id: "assess-seed-pengalaman-liburan",
-      topic: "Pengalaman Liburan (Bahasa Inggris)",
-      outcomes: "Siswa mampu menceritakan pengalaman masa lalu menggunakan past tense.",
-      rubric: "Past Tense: 40%, Kelancaran: 40%, Kosa Kata: 20%",
-      questions: [
-        { id: "q-seed-holiday-1", prompt: "Where did you go for your last holiday?", focus: "destination", ideal: "I went to [Place]." },
-        { id: "q-seed-holiday-2", prompt: "What did you do there?", focus: "activities", ideal: "I visited [Place] and ate [Food]." },
-        { id: "q-seed-holiday-3", prompt: "Did you enjoy it? Why?", focus: "feeling", ideal: "Yes, I enjoyed it because it was fun." }
-      ]
-    },
-    submissionConfig: {
-      finalScore: 85,
-      questionScores: [
-        { question: "Where did you go for your last holiday?", answer: "I went to Bali.", score: 90, strengths: ["Correct past tense"], gaps: [] },
-        { question: "What did you do there?", answer: "I go to the beach.", score: 70, strengths: ["Clear vocabulary"], gaps: ["Used present tense instead of past tense"] },
-        { question: "Did you enjoy it? Why?", answer: "Yes, because the beach is beautiful.", score: 95, strengths: ["Good reasoning"], gaps: [] }
-      ],
-      feedback: "Pemahaman past tense sudah cukup baik, perlu sedikit latihan pada kata kerja tidak beraturan."
-    }
+    assessments: [
+      {
+        id: "assess-seed-week1",
+        topic: "Minggu 1: Perkenalan Diri",
+        difficulty: "Pemula",
+        outcomes: "Siswa mampu memperkenalkan diri dalam bahasa Inggris dasar.",
+        rubric: "Kejelasan: 50%, Kosa Kata: 50%",
+        createdAt: new Date(now - 20 * dayMs).toISOString(),
+        questions: [
+          { id: "q-w1-1", prompt: "What is your name?", focus: "identity", ideal: "I am [Name]." },
+          { id: "q-w1-2", prompt: "Where do you live?", focus: "location", ideal: "I live in [City]." }
+        ],
+        submission: {
+          finalScore: 65,
+          submittedAt: new Date(now - 19 * dayMs).toISOString(),
+          questionScores: [
+            { question: "What is your name?", answer: "Me name is Budi.", score: 60, strengths: [], gaps: ["Grammar error (Me -> My)"] },
+            { question: "Where do you live?", answer: "I living in Jakarta.", score: 70, strengths: ["Correct city"], gaps: ["Grammar error (living -> live)"] }
+          ],
+          feedback: "Awal yang baik, tapi perlu diperhatikan penggunaan grammar dasar."
+        }
+      },
+      {
+        id: "assess-seed-week2",
+        topic: "Minggu 2: Hobi dan Minat",
+        difficulty: "Pemula",
+        outcomes: "Siswa mampu menceritakan hobi dan aktivitas kesukaan.",
+        rubric: "Kelancaran: 50%, Kosa Kata: 50%",
+        createdAt: new Date(now - 14 * dayMs).toISOString(),
+        questions: [
+          { id: "q-w2-1", prompt: "What are your hobbies?", focus: "hobbies", ideal: "My hobbies are [Hobby 1] and [Hobby 2]." },
+          { id: "q-w2-2", prompt: "Why do you like it?", focus: "reason", ideal: "I like it because [Reason]." }
+        ],
+        submission: {
+          finalScore: 78,
+          submittedAt: new Date(now - 13 * dayMs).toISOString(),
+          questionScores: [
+            { question: "What are your hobbies?", answer: "My hobbies are reading and swimming.", score: 85, strengths: ["Good vocabulary"], gaps: [] },
+            { question: "Why do you like it?", answer: "Because it make me happy.", score: 70, strengths: ["Clear reason"], gaps: ["Grammar error (make -> makes)"] }
+          ],
+          feedback: "Kemajuan yang bagus. Kosa kata sudah bertambah. Latih subjek dan kata kerja."
+        }
+      },
+      {
+        id: "assess-seed-week3",
+        topic: "Minggu 3: Pengalaman Liburan",
+        difficulty: "Menengah",
+        outcomes: "Siswa mampu menceritakan pengalaman masa lalu menggunakan past tense.",
+        rubric: "Past Tense: 40%, Kelancaran: 40%, Kosa Kata: 20%",
+        createdAt: new Date(now - 7 * dayMs).toISOString(),
+        questions: [
+          { id: "q-w3-1", prompt: "Where did you go for your last holiday?", focus: "destination", ideal: "I went to [Place]." },
+          { id: "q-w3-2", prompt: "What did you do there?", focus: "activities", ideal: "I visited [Place] and ate [Food]." },
+          { id: "q-w3-3", prompt: "Did you enjoy it? Why?", focus: "feeling", ideal: "Yes, I enjoyed it because it was fun." }
+        ],
+        submission: {
+          finalScore: 88,
+          submittedAt: new Date(now - 5 * dayMs).toISOString(),
+          questionScores: [
+            { question: "Where did you go for your last holiday?", answer: "I went to Bali with my family.", score: 95, strengths: ["Correct past tense", "Good detail"], gaps: [] },
+            { question: "What did you do there?", answer: "I swam at the beach and ate seafood.", score: 90, strengths: ["Clear activities", "Correct verbs"], gaps: [] },
+            { question: "Did you enjoy it? Why?", answer: "Yes, because the beach is beautiful.", score: 80, strengths: ["Good reasoning"], gaps: ["Could use past tense (was beautiful)"] }
+          ],
+          feedback: "Pemahaman past tense sudah sangat baik. Percaya diri saat berbicara sudah meningkat."
+        }
+      },
+      {
+        id: "assess-seed-unanswered",
+        topic: "Minggu 4: Rencana Masa Depan",
+        difficulty: "Lanjut",
+        timeLimit: 60,
+        outcomes: "Siswa mampu menjelaskan rencana masa depan menggunakan future tense.",
+        rubric: "Future Tense: 50%, Kosa Kata: 50%",
+        createdAt: new Date().toISOString(),
+        questions: [
+          { id: "q-w4-1", prompt: "What will you do after graduation?", focus: "plan", ideal: "I will [Action]." }
+        ]
+      }
+    ]
   });
 
   // TENANT 2: SMA Bina Nusantara
@@ -202,34 +211,48 @@ async function seedTestAccounts() {
     studentEmail: "siswa.binus@lisan.ai",
     className: "Kelas Bahasa Indonesia XI-IPA",
     testPassword,
-    a1Config: {
-      id: "assess-seed-pidato",
-      topic: "Pembukaan Pidato Persuasif",
-      outcomes: "Siswa mampu menyusun dan melafalkan pembukaan pidato dengan intonasi tepat.",
-      rubric: "Intonasi: 40%, Diksi: 40%, Artikulasi: 20%",
-      questions: [
-        { id: "q-seed-pidato-1", prompt: "Sampaikan salam pembuka dan sapaan penghormatan kepada hadirin.", focus: "salam", ideal: "Assalamu'alaikum/Selamat pagi, yang terhormat Bapak/Ibu guru serta teman-teman yang saya cintai." },
-        { id: "q-seed-pidato-2", prompt: "Sampaikan kalimat ucapan syukur sebagai pengantar pidato.", focus: "syukur", ideal: "Pertama-tama marilah kita panjatkan puji syukur ke hadirat Tuhan Yang Maha Esa atas rahmat-Nya." }
-      ]
-    },
-    a2Config: {
-      id: "assess-seed-argumentasi",
-      topic: "Debat: Dampak Sosial Media",
-      outcomes: "Siswa mampu memberikan pendapat yang logis dan menyanggah argumen dengan santun.",
-      rubric: "Logika: 50%, Kesantunan Berbahasa: 30%, Kosa Kata: 20%",
-      questions: [
-        { id: "q-seed-debat-1", prompt: "Apa pendapat utama Anda mengenai penggunaan sosial media pada anak di bawah umur?", focus: "opini", ideal: "Menurut saya, penggunaan sosial media pada anak di bawah umur sebaiknya dibatasi." },
-        { id: "q-seed-debat-2", prompt: "Bagaimana cara mencegah dampak negatifnya?", focus: "solusi", ideal: "Cara mencegahnya adalah dengan pengawasan orang tua secara langsung." }
-      ]
-    },
-    submissionConfig: {
-      finalScore: 92,
-      questionScores: [
-        { question: "Apa pendapat utama Anda mengenai penggunaan sosial media pada anak di bawah umur?", answer: "Menurut saya sebaiknya dilarang karena banyak konten tidak mendidik.", score: 95, strengths: ["Opini jelas", "Alasan logis"], gaps: [] },
-        { question: "Bagaimana cara mencegah dampak negatifnya?", answer: "Orang tua harus mengawasi anak-anaknya terus.", score: 89, strengths: ["Solusi relevan"], gaps: ["Diksi 'terus' bisa diganti 'secara berkala'"] }
-      ],
-      feedback: "Kemampuan argumentasi sudah sangat bagus. Pemilihan kata cukup baik."
-    }
+    assessments: [
+      {
+        id: "assess-seed-pidato",
+        topic: "Pembukaan Pidato Persuasif",
+        outcomes: "Siswa mampu menyusun dan melafalkan pembukaan pidato dengan intonasi tepat.",
+        rubric: "Intonasi: 40%, Diksi: 40%, Artikulasi: 20%",
+        createdAt: new Date(now - 10 * dayMs).toISOString(),
+        questions: [
+          { id: "q-seed-pidato-1", prompt: "Sampaikan salam pembuka dan sapaan penghormatan kepada hadirin.", focus: "salam", ideal: "Assalamu'alaikum/Selamat pagi..." },
+          { id: "q-seed-pidato-2", prompt: "Sampaikan kalimat ucapan syukur sebagai pengantar pidato.", focus: "syukur", ideal: "Pertama-tama marilah kita panjatkan puji syukur..." }
+        ],
+        submission: {
+          finalScore: 82,
+          submittedAt: new Date(now - 9 * dayMs).toISOString(),
+          questionScores: [
+            { question: "Sampaikan salam pembuka...", answer: "Selamat pagi semuanya yang terhormat.", score: 80, strengths: ["Jelas"], gaps: ["Kurang formal"] },
+            { question: "Sampaikan kalimat ucapan syukur...", answer: "Mari kita bersyukur kepada Tuhan.", score: 85, strengths: ["Intonasi baik"], gaps: [] }
+          ],
+          feedback: "Cukup baik, tapi perhatikan pemilihan kata agar lebih formal."
+        }
+      },
+      {
+        id: "assess-seed-argumentasi",
+        topic: "Debat: Dampak Sosial Media",
+        outcomes: "Siswa mampu memberikan pendapat yang logis dan menyanggah argumen dengan santun.",
+        rubric: "Logika: 50%, Kesantunan Berbahasa: 30%, Kosa Kata: 20%",
+        createdAt: new Date(now - 2 * dayMs).toISOString(),
+        questions: [
+          { id: "q-seed-debat-1", prompt: "Apa pendapat utama Anda mengenai penggunaan sosial media pada anak di bawah umur?", focus: "opini", ideal: "Menurut saya..." },
+          { id: "q-seed-debat-2", prompt: "Bagaimana cara mencegah dampak negatifnya?", focus: "solusi", ideal: "Cara mencegahnya adalah..." }
+        ],
+        submission: {
+          finalScore: 92,
+          submittedAt: new Date(now - 1 * dayMs).toISOString(),
+          questionScores: [
+            { question: "Apa pendapat utama Anda...", answer: "Menurut saya sebaiknya dilarang karena banyak konten tidak mendidik.", score: 95, strengths: ["Opini jelas", "Alasan logis"], gaps: [] },
+            { question: "Bagaimana cara mencegah...", answer: "Orang tua harus mengawasi anak-anaknya terus.", score: 89, strengths: ["Solusi relevan"], gaps: ["Diksi 'terus' bisa diganti 'secara berkala'"] }
+          ],
+          feedback: "Kemampuan argumentasi sudah sangat bagus. Pemilihan kata cukup baik."
+        }
+      }
+    ]
   });
 
   console.log("Done seeding multi-tenant demo data!");
