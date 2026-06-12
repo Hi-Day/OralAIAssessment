@@ -13,21 +13,22 @@ export function showToast(message, type = 'info') {
   
   toast.innerHTML = `
     <span class="toast-icon">${icon}</span>
-    <span class="toast-message">${message}</span>
+    <span class="toast-message" style="flex: 1;">${message}</span>
+    <button class="toast-close" aria-label="Close" title="Tutup">&times;</button>
   `;
 
   container.appendChild(toast);
 
-  // Trigger reflow to enable transition
-  toast.offsetHeight;
-  toast.classList.add('show');
+  const removeToast = () => {
+    if (toast.classList.contains('fade-out')) return;
+    toast.classList.add('fade-out');
+    toast.addEventListener('animationend', () => toast.remove());
+  };
 
-  setTimeout(() => {
-    toast.classList.remove('show');
-    toast.addEventListener('transitionend', () => {
-      toast.remove();
-    });
-  }, 3000);
+  const closeBtn = toast.querySelector('.toast-close');
+  closeBtn.addEventListener('click', removeToast);
+
+  setTimeout(removeToast, 5000);
 }
 
 // Simple wrapper to replace alert
